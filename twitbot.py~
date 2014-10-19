@@ -1,0 +1,70 @@
+import tweepy
+import sys
+import time
+import pickle
+import os.path
+
+CONSUMER_KEY = 'dJSc6Jc2rQ0bDAyh6zBBeX980'
+CONSUMER_SECRET = 'KMUqE9HcDJ6PyNUJFVbYKlkJfgqE7DdAIgaarrfuVs0UkTL3zL'
+ACCESS_KEY = '1086665743-1UhEDYJHzNR61LZ6qXbAcSKAb63l5TZpNzCAjVC'
+ACCESS_SECRET = '10HEYkOneRVXlQQE1t7VVPBU7SNjhZ5rDsBDdHXUF3E6G'
+auth = tweepy.OAuthHandler(CONSUMER_KEY, CONSUMER_SECRET)
+auth.set_access_token(ACCESS_KEY, ACCESS_SECRET)
+api = tweepy.API(auth)
+
+
+#uSE THIS OPTION TO UPLOAD A FILE FOR LARGE TWEETS
+def fileread(txt_file):
+	filename=open(txt_file,'r')
+	f=filename.readlines()
+	filename.close()
+	 
+	for line in f:
+	    api.update_status(line)
+	    time.sleep(10)#Tweet every 15 minutes
+
+
+#use this to tweet anything directly
+def line_tweet():
+	#new_tweet = raw_input("Enter tweet: ")
+	api.update_status(raw_input("Enter Tweet: "))
+	
+while True:
+	print "Choose one of the options: \n\t 1. Long Tweet(use a text file) \n\t 2. Single Tweet"
+	choice = raw_input("Choose :")
+	if choice =='0':
+		break
+	if choice == '1':
+		f_i = raw_input("File Name :")
+		fileread(f_i)
+		break
+	if choice == '2':
+		line_tweet()
+		break
+
+print "End!! (for now)"
+
+retwt_list = ["@ManUtdStuff", "@RedScouts","@ManUtd_Hindi","@juanmata8","@ManUtd"]
+if os.path.isfile("retweet dict.p") == True:
+	print "File available to load"
+	retwt_dict = pickle.load(open("retweet dict.p","rb"))
+	for account in retwt_list:
+		retwt = api.user_timeline(id = account,count =  '1')
+		for each in retwt:
+			if each.id in retwt_dict:
+				print "ID is already in the dict"
+			else:
+				retwt_dict[account] = each.id
+print retwt_dict
+
+pickle.dump(retwt_dict, open("retweet dict.p","wb"))
+
+for ids in  retwt_dict.values():
+	try:
+		api.retweet(ids)
+	except:
+		print "Already Retweeted"
+print "ended"
+
+
+
